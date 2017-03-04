@@ -22,8 +22,7 @@
 
 
 import flask
-from flask import Flask, request
-import json
+from flask import Flask, request, json
 
 app = Flask(__name__)
 app.debug = True
@@ -66,44 +65,59 @@ myWorld = World()
 # I give this to you, this is how you get the raw body/data portion of a post in flask
 # this should come with flask but whatever, it's not my project.
 def flask_post_json():
-    '''Ah the joys of frameworks! They do so much work for you
-       that they get in the way of sane operation!'''
-    if (request.json != None):
+    """Ah the joys of frameworks! They do so much work for you
+       that they get in the way of sane operation!"""
+    if request.json is not None:
         return request.json
-    elif (request.data != None and request.data != ''):
+    elif request.data is not None and request.data != '':
         return json.loads(request.data)
     else:
         return json.loads(request.form.keys()[0])
 
 
+def jsonify(obj):
+    """
+    Converts obj to its JSON representation
+    From http://flask.pocoo.org/docs/0.12/api/#flask.json.jsonify
+    """
+    return json.jsonify(obj)
+
 @app.route("/")
 def hello():
-    '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    """Permanently redirects to /static/index.html"""
+    url = flask.url_for('static', filename='index.html')
+    return flask.redirect(url, 301)
 
 
 @app.route("/entity/<entity>", methods=['POST', 'PUT'])
 def update(entity):
-    '''update the entities via this interface'''
-    return None
+    """update the entities via this interface"""
+    body = flask_post_json()
+
+    # From Python docs at https://docs.python.org/2/library/stdtypes.html#dict.iteritems
+    for key, value in body.iteritems():
+        myWorld.update(entity, key, value)
+
+    return jsonify(myWorld.get(entity))
 
 
 @app.route("/world", methods=['POST', 'GET'])
 def world():
-    '''you should probably return the world here'''
-    return None
+    """you should probably return the world here"""
+    return jsonify(myWorld.world())
 
 
 @app.route("/entity/<entity>")
 def get_entity(entity):
-    '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    """This is the GET version of the entity interface, return a representation of the entity"""
+    return jsonify(myWorld.get(entity))
 
 
 @app.route("/clear", methods=['POST', 'GET'])
 def clear():
-    '''Clear the world out!'''
-    return None
+    """Clear the world out!"""
+    myWorld.clear()
+    return jsonify(myWorld.world())
 
 
 if __name__ == "__main__":
