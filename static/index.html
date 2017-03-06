@@ -27,12 +27,79 @@
 <body bgcolor="black" height="100%" width="100%">
 <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas>
 <script>
+    /*
+     * Converts an HSV color to an RGB one.
+     *
+     * accepts parameters
+     * h  Object = {h:x, s:y, v:z}
+     * OR
+     * h, s, v
+     *
+     * Written by Paul S. (http://stackoverflow.com/users/1615483/paul-s) from StackOverflow
+     * Link: http://stackoverflow.com/a/17243070 (CC-BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/legalcode)
+     */
+    function hsvToRgb(h, s, v) {
+        var r, g, b, i, f, p, q, t;
+        if (arguments.length === 1) {
+            s = h.s, v = h.v, h = h.h;
+        }
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0:
+                r = v, g = t, b = p;
+                break;
+            case 1:
+                r = q, g = v, b = p;
+                break;
+            case 2:
+                r = p, g = v, b = t;
+                break;
+            case 3:
+                r = p, g = q, b = v;
+                break;
+            case 4:
+                r = t, g = p, b = v;
+                break;
+            case 5:
+                r = v, g = p, b = q;
+                break;
+        }
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
+    }
+
+    function rgbToHex(rgb) {
+        return "#" + rgb.r.toString(16) + rgb.g.toString(16) + rgb.b.toString(16);
+    }
+
+    // Returns an array of size 'steps' running through all the colours
+    // Written by Håvard (http://stackoverflow.com/users/320616/h%c3%a5vard) from StackOverflow
+    // Link: http://stackoverflow.com/a/6823364 (CC-BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/legalcode)
+    // Some modifications
+    function fullColourGradient(steps) {
+        var i = 360 / (steps - 1); // distribute the colors evenly on the hue range
+        var r = []; // hold the generated colors
+        for (var x = 0; x < steps; x++) {
+            r.push(rgbToHex(hsvToRgb(i * x, 100, 100))); // you can also alternate the saturation and value for even more contrast between the colors
+        }
+        return r;
+    }
+
     var canvas = document.getElementById('c');
     var host = window.location.host;
     var context = canvas.getContext("2d");
     var W = canvas.width = window.innerWidth - 6;
     var H = canvas.height = window.innerHeight - 50;
 
+    var gradientArray = fullColourGradient(128);
+    var gradientCount = 0;
 
     function sendJSONXMLHTTPRequest(url, objects, callback) {
         var xhr = new XMLHttpRequest();
@@ -60,6 +127,14 @@
 
 
     world = {};
+
+    function getNextColour() {
+        var colour = gradientArray[gradientCount];
+
+        gradientCount = (gradientCount + 1) % gradientArray.length;
+
+        return colour;
+    }
 
     //XXX: TODO Make this prettier!
     function drawCircle(context, entity) {
@@ -141,6 +216,7 @@
 
 
     function addEntity(entity, data) {
+        data.colour = getNextColour();
         //XXX: Send a XHTML Request that updates the entity you just  modified!
         sendJSONXMLHTTPRequest("/entity/" + entity, data, function (returnValue) {
         })
@@ -272,8 +348,9 @@
         sendJSONXMLHTTPRequest("/world", null, function (newWorld) {
             world = newWorld;
             drawNextFrame();
-            drawFrame();
         });
+
+        drawFrame();
     }
 
     // 30 frames per second
