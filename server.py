@@ -74,12 +74,17 @@ def flask_post_json():
         return json.loads(request.form.keys()[0])
 
 
-def jsonify(obj):
+def cors_json_response(obj):
     """
-    Converts obj to its JSON representation
+    Converts obj to its JSON representation,
+    then returns it as a CORS-friendly response
     From http://flask.pocoo.org/docs/0.12/api/#flask.json.jsonify
+    and http://flask.pocoo.org/docs/0.12/api/#flask.make_response
     """
-    return json.jsonify(obj)
+    response = flask.make_response(json.jsonify(obj))
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    return response
 
 
 @app.route("/")
@@ -98,26 +103,26 @@ def update(entity):
     for key, value in body.iteritems():
         myWorld.update(entity, key, value)
 
-    return jsonify(myWorld.get(entity))
+    return cors_json_response(myWorld.get(entity))
 
 
 @app.route("/world", methods=['POST', 'GET'])
 def world():
     """you should probably return the world here"""
-    return jsonify(myWorld.world())
+    return cors_json_response(myWorld.world())
 
 
 @app.route("/entity/<entity>")
 def get_entity(entity):
     """This is the GET version of the entity interface, return a representation of the entity"""
-    return jsonify(myWorld.get(entity))
+    return cors_json_response(myWorld.get(entity))
 
 
 @app.route("/clear", methods=['POST', 'GET'])
 def clear():
     """Clear the world out!"""
     myWorld.clear()
-    return jsonify(myWorld.world())
+    return cors_json_response(myWorld.world())
 
 
 if __name__ == "__main__":
