@@ -25,8 +25,6 @@ Sources Consulted
 * StackOverflow (CC-BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/legalcode)
     * http://stackoverflow.com/a/17243070 by Paul S. (http://stackoverflow.com/users/1615483/paul-s)
     * http://stackoverflow.com/a/6823364 by Håvard (http://stackoverflow.com/users/320616/h%c3%a5vard)
-
-
-
-
-
+* David Yee
+    * Discussed debugging slowness when using localhost:5000 instead of 127.0.0.1:5000 on Windows
+        (the solution was, of course, to switch to Linux)
