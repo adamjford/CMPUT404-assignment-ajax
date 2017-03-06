@@ -75,8 +75,13 @@
         };
     }
 
+    function toOctet(number) {
+        var str = number.toString(16);
+        return str.length == 1 ? "0" + str : str;
+    }
+
     function rgbToHex(rgb) {
-        return "#" + rgb.r.toString(16) + rgb.g.toString(16) + rgb.b.toString(16);
+        return "#" + toOctet(rgb.r) + toOctet(rgb.g) + toOctet(rgb.b);
     }
 
     // Returns an array of size 'steps' running through all the colours
@@ -84,10 +89,10 @@
     // Link: http://stackoverflow.com/a/6823364 (CC-BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/legalcode)
     // Some modifications
     function fullColourGradient(steps) {
-        var i = 360 / (steps - 1); // distribute the colors evenly on the hue range
+        var i = 1 / (steps - 1); // distribute the colors evenly on the hue range
         var r = []; // hold the generated colors
         for (var x = 0; x < steps; x++) {
-            r.push(rgbToHex(hsvToRgb(i * x, 100, 100))); // you can also alternate the saturation and value for even more contrast between the colors
+            r.push(rgbToHex(hsvToRgb(i * x, 1, 1))); // you can also alternate the saturation and value for even more contrast between the colors
         }
         return r;
     }
@@ -98,7 +103,7 @@
     var W = canvas.width = window.innerWidth - 6;
     var H = canvas.height = window.innerHeight - 50;
 
-    var gradientArray = fullColourGradient(128);
+    var gradientArray = fullColourGradient(360);
     var gradientCount = 0;
 
     function sendJSONXMLHTTPRequest(url, objects, callback) {
