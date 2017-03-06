@@ -82,6 +82,7 @@ def jsonify(obj):
     """
     return json.jsonify(obj)
 
+
 @app.route("/")
 def hello():
     """Permanently redirects to /static/index.html"""
